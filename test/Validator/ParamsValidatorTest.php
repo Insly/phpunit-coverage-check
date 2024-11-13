@@ -72,7 +72,7 @@ final class ParamsValidatorTest extends TestCase
         $this->assertTrue($validator->validatePercent($percent));
     }
 
-    public function validPercent(): array
+    public static function validPercent(): array
     {
         return [
             'lowest value'  => ['0'],
@@ -93,7 +93,7 @@ final class ParamsValidatorTest extends TestCase
         $this->assertFalse($validator->validatePercent($percent));
     }
 
-    public function invalidPercent(): array
+    public static function invalidPercent(): array
     {
         return [
             'negative value'    => ['-1'],

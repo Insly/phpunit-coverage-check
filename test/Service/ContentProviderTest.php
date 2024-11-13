@@ -5,31 +5,28 @@ declare(strict_types=1);
 namespace PhpunitCoverageCheck\Service;
 
 use PHPUnit\Framework\TestCase;
-
-// native PHP functions mocks
-{
-    // simulate for expect
-    function file_get_contents() {
-        return 'file_get_contents() was run';
-    }
-
-    // simulate for expect
-    function stream_get_contents() {
-        return 'stream_get_contents() was run';
-    }
-
-    // simulate fgets() behaviour
-    $fgetsLine = 0;
-    function fgets() {
-        global $fgetsLine;
-        $lines = ["test", false];
-
-        return $lines[$fgetsLine++];
-    }
-}
+use phpmock\mockery\PHPMockery;
+use Mockery;
 
 final class ContentProviderTest extends TestCase
 {
+    private $mockFileGetContents;
+    private $mockStreamGetContents;
+    private $mockFgets;
+
+    protected function setUp(): void
+    {
+        $this->mockFileGetContents = $this->mockFileGetContents();
+        $this->mockStreamGetContents = $this->mockStreamGetContents();
+        $this->mockFgets = $this->mockFgets();
+    }
+
+    protected function tearDown(): void
+    {
+        // Close all mocks to avoid re-enabling errors
+        Mockery::close();
+    }
+
     /**
      * @test
      */
@@ -66,5 +63,36 @@ final class ContentProviderTest extends TestCase
         $this->expectOutputString('test');
 
         $contentProvider->getContent(null, true);
+    }
+
+    /**
+     * Mocks file_get_contents function in the ContentProvider namespace.
+     */
+    private function mockFileGetContents()
+    {
+        return PHPMockery::mock('PhpunitCoverageCheck\Service', 'file_get_contents')
+            ->andReturn('file_get_contents() was run');
+    }
+
+    /**
+     * Mocks stream_get_contents function in the ContentProvider namespace.
+     */
+    private function mockStreamGetContents()
+    {
+        return PHPMockery::mock('PhpunitCoverageCheck\Service', 'stream_get_contents')
+            ->andReturn('stream_get_contents() was run');
+    }
+
+    /**
+     * Mocks fgets function in the ContentProvider namespace to simulate line-by-line output.
+     */
+    private function mockFgets()
+    {
+        return PHPMockery::mock('PhpunitCoverageCheck\Service', 'fgets')
+            ->andReturnUsing(function () {
+                static $line = 0;
+                $lines = ["test", false];
+                return $lines[$line++];
+            });
     }
 }
