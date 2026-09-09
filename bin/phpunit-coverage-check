@@ -29,13 +29,21 @@ $service->addFormat(new Format\Html());
 $service->addFormat(new Format\Text());
 
 $application = new Application();
-$application->add(
-    new Command\Main(
-        new ParamsValidator(),
-        $service,
-        new ContentProvider()
-    )
+
+$command = new Command\Main(
+    new ParamsValidator(),
+    $service,
+    new ContentProvider()
 );
+
+// For Symfony Console < 7.4, use Application::add()
+if (\method_exists($application, 'addCommand')) {
+    /** @phan-suppress-next-line PhanUndeclaredStaticMethod (Symfony Console 7.4+) */
+    $ret = $application->addCommand($command);
+} else {
+    $ret = $application->add($command);
+}
+
 $application->setDefinition(
     new InputDefinition(
         [
